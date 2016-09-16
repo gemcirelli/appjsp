@@ -1,6 +1,7 @@
 package company_management.servlet;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.servlet.RequestDispatcher;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import company_management.bean.CompanyBean;
 
 import company_management.bean.EmployeeBean;
+import company_management.utility.SaveMySQL;
 
 /**
  * Servlet implementation class CompanyManagementServlet
@@ -154,6 +156,39 @@ public class CompanyManagementServlet extends HttpServlet {
 			  for(EmployeeBean cl: companyEmployeesList){
 				  System.out.println("Employee"+ cl.getSurname());
 			  }
+		}
+		
+		
+		else if(whatsend.equalsIgnoreCase("saveCompany")){
+				CompanyBean company;
+				company = (CompanyBean) request.getSession().getAttribute("COMPANY");
+				SaveMySQL saveCompany = new SaveMySQL();
+						 try {
+							saveCompany.insertCompany(company);
+						} catch (SQLException e) {
+							System.out.println("ERROR AL INSERTAR");
+							// TODO Auto-generated catch block
+							System.out.println("ERROR:"+ e.getErrorCode()+":"+ e.getMessage());
+							e.printStackTrace();
+						}
+						
+					
+						ArrayList<CompanyBean> companyInDB = new ArrayList<CompanyBean>();
+						
+						try {
+							companyInDB= saveCompany.searchCompanies();
+						} catch (SQLException e) {
+							System.out.println("ERROR:" + e.getErrorCode()+":"+e.getMessage());
+							e.printStackTrace();
+							// TODO: handle exception
+						}
+						
+						ServletContext sc= request.getSession().getServletContext();
+						request.removeAttribute("COMPANIES");
+						request.setAttribute("COMPANIES", companyInDB);
+						RequestDispatcher rd =sc.getRequestDispatcher("/listCompany.jsp");
+						rd.forward(request, response);
+						 
 		}
 		
 	}
